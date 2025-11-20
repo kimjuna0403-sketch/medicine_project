@@ -746,7 +746,7 @@ def send_medication_taken_notification(parent_name, medicines, parent_user_id):
         # 메시지 생성 (한국 시간 KST)
         kst = timezone(timedelta(hours=9))
         current_time = datetime.now(kst).strftime('%H:%M')
-        message = f"💊 {parent_name}님이 {current_time}에 약을 복용하셨습니다.\n📋 복용약: {medicine_list}"
+        message = f"💊 {parent_name}님이 방금 약을 복용하셨습니다.\n📋 복용약: {medicine_list}"
         
         # 각 자녀에게 알림 전송
         for child_data in children:
