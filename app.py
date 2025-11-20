@@ -5,7 +5,8 @@ import base64
 from PIL import Image, ImageEnhance
 import io
 import json
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
+import time
 import requests
 import xml.etree.ElementTree as ET
 import urllib.parse
