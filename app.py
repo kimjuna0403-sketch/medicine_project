@@ -5,7 +5,7 @@ import base64
 from PIL import Image, ImageEnhance
 import io
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 import requests
 import xml.etree.ElementTree as ET
@@ -621,7 +621,7 @@ def send_telegram_message(chat_id, message):
 
 {message}
 
-<i>우리 가족 스마트 복약 관리리</i>"""
+<i>우리 가족 스마트 복약 관리</i>"""
         
         data = {
             "chat_id": chat_id,
@@ -743,8 +743,9 @@ def send_medication_taken_notification(parent_name, medicines, parent_user_id):
         if len(medicines) > 3:
             medicine_list += f" 외 {len(medicines)-3}개"
         
-        # 메시지 생성
-        current_time = datetime.now().strftime('%H:%M')
+        # 메시지 생성 (한국 시간 KST)
+        kst = timezone(timedelta(hours=9))
+        current_time = datetime.now(kst).strftime('%H:%M')
         message = f"💊 {parent_name}님이 {current_time}에 약을 복용하셨습니다.\n📋 복용약: {medicine_list}"
         
         # 각 자녀에게 알림 전송
