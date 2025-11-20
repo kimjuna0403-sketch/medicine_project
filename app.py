@@ -19,38 +19,32 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-st.markdown("""
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#667eea">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="스마트 약봉지">
-    <link rel="apple-touch-icon" href="https://em-content.zobj.net/thumbs/240/apple/354/pill_1f48a.png">
-    <link rel="manifest" href="/manifest.json">
-""", unsafe_allow_html=True)
-# ==================== 📱 모바일 앱 UI 설정 (CSS) ====================
+
+# ==================== 모바일 UI 설정 ====================
 def apply_mobile_ui():
     st.markdown("""
         <style>
-        /* 1. 전체 배경 및 앱 프레임 설정 */
         .stApp {
-            background-color: #f0f2f6; /* 전체 배경은 회색 */
+            background-color: #f0f2f6;
             display: flex;
             justify-content: center;
         }
         
-        /* 2. 메인 컨텐츠 영역을 폰 사이즈로 고정 */
         .main .block-container {
-            max-width: 400px !important; /* 아이폰 Pro Max 너비 정도 */
+            max-width: 400px !important;
             padding: 1rem !important;
-            padding-bottom: 100px !important; /* 하단 네비게이션 공간 확보 */
+            padding-bottom: 100px !important;
             background-color: white;
             margin: 0 auto;
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1); /* 살짝 그림자 주어 입체감 */
-            border-radius: 0 0 20px 20px; /* 하단 둥글게 (선택) */
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 0 0 20px 20px;
         }
-        /* 4. 탭 스타일 변경 (상단 탭이 아닌 버튼형태로 보이게) */
+
+        header[data-testid="stHeader"] {
+            visibility: hidden;
+        }
+        
         .stTabs [data-baseweb="tab-list"] {
             gap: 8px;
             background-color: transparent;
@@ -73,7 +67,6 @@ def apply_mobile_ui():
             border: none;
         }
 
-        /* 5. 버튼 스타일 (앱 버튼처럼 둥글고 크게) */
         .stButton > button {
             width: 100%;
             border-radius: 15px;
@@ -87,36 +80,54 @@ def apply_mobile_ui():
         .stButton > button:active {
             transform: scale(0.98);
         }
-
-        /* 6. 하단 네비게이션 바 (가짜) 위치 잡기 */
-        .bottom-nav-container {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 400px; /* 메인 컨텐츠 너비와 일치 */
-            background: white;
-            border-top: 1px solid #eee;
-            padding: 10px 20px;
-            z-index: 99999;
-            display: flex;
-            justify-content: space-between;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        
+        /* 알림 배지 스타일 */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            font-weight: bold;
         }
         
-        /* 7. 기타 UI 다듬기 */
+        .notification-card {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .notification-card.unread {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
         h1 { font-size: 1.8rem !important; }
         h2 { font-size: 1.4rem !important; }
         h3 { font-size: 1.2rem !important; }
         
-        /* 이미지 둥글게 */
         img { border-radius: 10px; }
         
         </style>
     """, unsafe_allow_html=True)
 
-# UI 함수 실행
 apply_mobile_ui()
 
 # ==================== CSS 스타일링 ====================
@@ -169,43 +180,6 @@ st.markdown("""
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background: white;
         color: #667eea;
-    }
-    
-    .calendar-container {
-        background: white;
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        margin: 20px 0;
-    }
-    
-    .calendar-day {
-        padding: 15px;
-        margin: 5px;
-        border-radius: 10px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        background: #f8f9fa;
-        border: 2px solid transparent;
-    }
-    
-    .calendar-day:hover {
-        background: #e9ecef;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .calendar-day.has-record {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-weight: 700;
-        border-color: #667eea;
-    }
-    
-    .calendar-day.today {
-        border: 3px solid #28a745;
-        font-weight: 700;
     }
     
     .info-card {
@@ -262,70 +236,9 @@ st.markdown("""
         margin: 15px 0;
     }
     
-    .badge {
-        display: inline-block;
-        padding: 8px 20px;
-        border-radius: 20px;
-        font-weight: 700;
-        font-size: 1em;
-        margin: 5px;
-    }
-    
-    .badge-success { background: #28a745; color: white; }
-    .badge-warning { background: #ffc107; color: #000; }
-    .badge-danger { background: #dc3545; color: white; }
-    
-    .css-1d391kg {
-        background: rgba(255, 255, 255, 0.95);
-    }
-    
-    .stButton>button {
-        font-weight: 600;
-        border-radius: 10px;
-        padding: 12px 24px;
-        font-size: 1em;
-        transition: all 0.3s;
-    }
-    
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    
-    .stTextInput>div>div>input {
-        border-radius: 10px;
-        border: 2px solid #ddd;
-        padding: 12px;
-        font-size: 1em;
-    }
-    
-    .stChatMessage {
-        background: white;
-        border-radius: 15px;
-        padding: 15px;
-        margin: 10px 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .streamlit-expanderHeader {
-        background: white;
-        border-radius: 10px;
-        font-weight: 600;
-        font-size: 1.1em;
-    }
-    
-    .stProgress > div > div > div {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    }
-    
     h1, h2, h3, h4 {
         color: white !important;
         font-weight: 700 !important;
-    }
-    
-    p, li, span {
-        font-size: 1.05em;
-        line-height: 1.6;
     }
     
     [data-testid="stMetricValue"] {
@@ -419,17 +332,10 @@ def search_mfds_medicine(medicine_name):
                     medicine_info = {
                         '제품명': item.find('itemName').text if item.find('itemName') is not None else '',
                         '업체명': item.find('entpName').text if item.find('entpName') is not None else '',
-                        '품목기준코드': item.find('itemSeq').text if item.find('itemSeq') is not None else '',
                         '효능효과': item.find('efcyQesitm').text if item.find('efcyQesitm') is not None else '정보 없음',
                         '사용법': item.find('useMethodQesitm').text if item.find('useMethodQesitm') is not None else '정보 없음',
-                        '주의사항_경고': item.find('atpnWarnQesitm').text if item.find('atpnWarnQesitm') is not None else '',
                         '주의사항': item.find('atpnQesitm').text if item.find('atpnQesitm') is not None else '정보 없음',
-                        '상호작용': item.find('intrcQesitm').text if item.find('intrcQesitm') is not None else '정보 없음',
-                        '부작용': item.find('seQesitm').text if item.find('seQesitm') is not None else '정보 없음',
-                        '보관방법': item.find('depositMethodQesitm').text if item.find('depositMethodQesitm') is not None else '정보 없음',
                         '낱알이미지': item.find('itemImage').text if item.find('itemImage') is not None else '',
-                        '공개일자': item.find('openDe').text if item.find('openDe') is not None else '',
-                        '수정일자': item.find('updateDe').text if item.find('updateDe') is not None else ''
                     }
                     results.append(medicine_info)
                 return results
@@ -453,9 +359,7 @@ def search_medicine_info_gpt(medicine_name):
     "용법용량": "복용 방법",
     "주의사항": "주의할 점",
     "부작용": "부작용",
-    "상호작용": "상호작용",
-    "보관방법": "보관법",
-    "위험도": "낮음/보통/높음"
+    "보관방법": "보관법"
 }}
 
 반드시 유효한 JSON으로만 답변하세요.
@@ -498,22 +402,13 @@ def analyze_medicine_bag(image):
 중요한 규칙:
 1. 약 이름은 최대한 정확하게 읽어주세요
 2. 흐릿하거나 불명확해도 최선을 다해 추론해주세요
-3. 손글씨도 읽어주세요
-4. "정", "캡슐", "시럽" 등이 붙은 약 이름을 찾아주세요
-5. 약 이름이 전혀 보이지 않으면 빈 배열로 반환하세요
+3. "정", "캡슐", "시럽" 등이 붙은 약 이름을 찾아주세요
 
 반드시 아래 JSON 형식으로만 답변하세요:
 {
   "medicines": ["약이름1", "약이름2", "약이름3"],
   "hospital": "병원명 또는 약국명",
   "date": "조제일 (YYYY-MM-DD 형식)"
-}
-
-약 이름을 찾을 수 없으면:
-{
-  "medicines": [],
-  "hospital": "알 수 없음",
-  "date": "알 수 없음"
 }
 
 다른 텍스트나 설명 없이 오직 JSON만 출력하세요."""
@@ -548,8 +443,6 @@ def analyze_medicine_bag(image):
         
     except json.JSONDecodeError as e:
         st.error(f"❌ JSON 파싱 오류: {str(e)}")
-        with st.expander("🔍 GPT 응답 확인 (디버깅용)"):
-            st.code(result[:500])
         return None
     except Exception as e:
         st.error(f"❌ 이미지 분석 오류: {str(e)}")
@@ -562,7 +455,7 @@ def get_user_info():
         return st.session_state.patient_name, st.session_state.patient_age
     return None, None
 
-def save_to_database(patient_name, patient_age, medicines, hospital, analysis, scan_date=None):
+def save_to_database(patient_name, patient_age, medicines, hospital, analysis, scan_date=None, user_id=None):
     """Supabase에 저장"""
     try:
         if scan_date is None:
@@ -575,7 +468,9 @@ def save_to_database(patient_name, patient_age, medicines, hospital, analysis, s
             "hospital": hospital,
             "analysis": analysis,
             "scan_date": scan_date,
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "user_id": user_id,
+            "taken": False
         }
         supabase.table('medicine_records').insert(data).execute()
         return True
@@ -646,7 +541,7 @@ def get_calendar_data(patient_name, year, month):
         st.error(f"❌ 캘린더 데이터 조회 오류: {str(e)}")
         return set()
 
-# ==================== [추가] 자녀 복약 관리 함수 ====================
+# ==================== 사용자 관리 함수 ====================
 def create_user(name, age, role):
     try:
         data = {"name": name, "age": age, "role": role}
@@ -673,19 +568,23 @@ def connect_family(parent_id, child_id):
 def get_my_parents(child_id):
     try:
         response = supabase.table('family_connections')\
-            .select('parent_id, users!family_connections_parent_id_fkey(name, age)')\
+            .select('parent_id, users!family_connections_parent_id_fkey(id, name, age)')\
             .eq('child_id', child_id)\
             .execute()
         return response.data
     except:
         return []
 
-def mark_as_taken(record_id):
+def get_my_children(parent_id):
+    """부모의 자녀 목록 가져오기"""
     try:
-        supabase.table('medicine_records').update({'taken': True}).eq('id', record_id).execute()
-        return True
+        response = supabase.table('family_connections')\
+            .select('child_id, users!family_connections_child_id_fkey(id, name)')\
+            .eq('parent_id', parent_id)\
+            .execute()
+        return response.data
     except:
-        return False
+        return []
 
 def get_today_medicine_status(user_id):
     try:
@@ -709,6 +608,176 @@ def link_old_records(patient_name, user_id):
             .execute()
     except:
         pass
+
+# ==================== 🔔 알림 시스템 (텔레그램 + DB) ====================
+def send_telegram_message(chat_id, message):
+    """텔레그램 메시지 전송"""
+    try:
+        bot_token = st.secrets.get("TELEGRAM_BOT_TOKEN")
+        if not bot_token or not chat_id:
+            return False
+        
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        # HTML 포맷으로 예쁘게 만들기
+        formatted_message = f"""<b>💊 복약 알림</b>
+
+{message}
+
+<i>스마트 약봉지 분석 시스템</i>"""
+        
+        data = {
+            "chat_id": chat_id,
+            "text": formatted_message,
+            "parse_mode": "HTML"
+        }
+        
+        response = requests.post(url, json=data, timeout=10)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"텔레그램 전송 실패: {str(e)}")
+        return False
+
+
+def send_notification(recipient_user_id, message, notification_type="medication"):
+    """
+    알림 전송 (DB + 텔레그램)
+    
+    Args:
+        recipient_user_id: 수신자 user_id
+        message: 알림 메시지
+        notification_type: 알림 종류 (medication, reminder 등)
+    """
+    try:
+        # 1. DB에 알림 저장 (무조건 실행)
+        data = {
+            "recipient_user_id": recipient_user_id,
+            "message": message,
+            "notification_type": notification_type,
+            "is_read": False,
+            "created_at": datetime.now().isoformat()
+        }
+        supabase.table('notifications').insert(data).execute()
+        
+        # 2. 텔레그램 알림 (활성화된 경우)
+        if st.secrets.get("TELEGRAM_ENABLED", False):
+            try:
+                # 사용자 설정에서 chat_id 가져오기
+                user_settings = supabase.table('user_notification_settings')\
+                    .select('telegram_chat_id, telegram_enabled')\
+                    .eq('user_id', recipient_user_id)\
+                    .execute()
+                
+                if user_settings.data and len(user_settings.data) > 0:
+                    settings = user_settings.data[0]
+                    if settings.get('telegram_enabled'):
+                        chat_id = settings.get('telegram_chat_id')
+                        if chat_id:
+                            send_telegram_message(chat_id, message)
+            except Exception as e:
+                # 텔레그램 실패해도 DB 알림은 정상 작동
+                print(f"텔레그램 알림 실패: {str(e)}")
+        
+        return True
+    except Exception as e:
+        st.error(f"알림 전송 실패: {str(e)}")
+        return False
+
+def get_unread_notifications(user_id):
+    """읽지 않은 알림 가져오기"""
+    try:
+        response = supabase.table('notifications')\
+            .select('*')\
+            .eq('recipient_user_id', user_id)\
+            .eq('is_read', False)\
+            .order('created_at', desc=True)\
+            .execute()
+        return response.data
+    except:
+        return []
+
+def get_all_notifications(user_id, limit=20):
+    """모든 알림 가져오기 (읽음/안읽음 모두)"""
+    try:
+        response = supabase.table('notifications')\
+            .select('*')\
+            .eq('recipient_user_id', user_id)\
+            .order('created_at', desc=True)\
+            .limit(limit)\
+            .execute()
+        return response.data
+    except:
+        return []
+
+def mark_notification_as_read(notification_id):
+    """알림 읽음 처리"""
+    try:
+        supabase.table('notifications')\
+            .update({'is_read': True})\
+            .eq('id', notification_id)\
+            .execute()
+        return True
+    except:
+        return False
+
+def mark_all_notifications_as_read(user_id):
+    """모든 알림 읽음 처리"""
+    try:
+        supabase.table('notifications')\
+            .update({'is_read': True})\
+            .eq('recipient_user_id', user_id)\
+            .eq('is_read', False)\
+            .execute()
+        return True
+    except:
+        return False
+
+def send_medication_taken_notification(parent_name, medicines, parent_user_id):
+    """복약 완료 알림을 자녀들에게 전송"""
+    try:
+        # 자녀 목록 가져오기
+        children = get_my_children(parent_user_id)
+        
+        if not children:
+            return
+        
+        # 약 이름 포맷팅
+        medicine_list = ", ".join(medicines[:3])
+        if len(medicines) > 3:
+            medicine_list += f" 외 {len(medicines)-3}개"
+        
+        # 메시지 생성
+        current_time = datetime.now().strftime('%H:%M')
+        message = f"💊 {parent_name}님이 {current_time}에 약을 복용하셨습니다.\n📋 복용약: {medicine_list}"
+        
+        # 각 자녀에게 알림 전송
+        for child_data in children:
+            child_info = child_data.get('users', {})
+            if isinstance(child_info, dict):
+                child_id = child_info.get('id')
+            else:
+                child_id = child_data.get('child_id')
+            
+            if child_id:
+                send_notification(child_id, message, "medication")
+        
+        return True
+    except Exception as e:
+        st.error(f"알림 전송 실패: {str(e)}")
+        return False
+
+def mark_as_taken(record_id, parent_name, medicines, parent_user_id):
+    """복약 완료 체크 + 자녀에게 알림 전송"""
+    try:
+        # 복약 완료 처리
+        supabase.table('medicine_records').update({'taken': True}).eq('id', record_id).execute()
+        
+        # 자녀들에게 알림 전송
+        send_medication_taken_notification(parent_name, medicines, parent_user_id)
+        
+        return True
+    except:
+        return False
 
 # ==================== 메인 타이틀 ====================
 st.markdown('<h1 class="main-title">💊 스마트 약봉지 분석 시스템</h1>', unsafe_allow_html=True)
@@ -758,6 +827,12 @@ with st.sidebar:
             st.session_state.user_id = user['id']
             link_old_records(patient_name, user['id'])
             st.success(f"✅ {patient_name}님, 환영합니다!")
+            
+            # 자녀 모드일 경우 읽지 않은 알림 표시
+            if user_role == "자녀":
+                unread_count = len(get_unread_notifications(user['id']))
+                if unread_count > 0:
+                    st.warning(f"🔔 읽지 않은 알림 {unread_count}개")
         else:
             if st.button("🆕 회원가입", use_container_width=True):
                 role = 'parent' if user_role == "부모님" else 'child'
@@ -794,27 +869,111 @@ with st.sidebar:
                 st.metric("총 처방", f"{total_count}건", help="전체 처방 기록")
             with col2:
                 st.metric("이번 주", f"{week_count}건", help="최근 7일 기록")
-            
-            # 가장 많이 처방받은 약
-            if all_records:
-                all_medicines = []
-                for record in all_records:
-                    medicines = record.get('medicines', [])
-                    if isinstance(medicines, list):
-                        all_medicines.extend(medicines)
-                
-                if all_medicines:
-                    from collections import Counter
-                    most_common = Counter(all_medicines).most_common(3)
-                    
-                    st.markdown("### 💊 자주 처방받는 약")
-                    for med, count in most_common:
-                        st.markdown(f"- **{med}**: {count}회")
         except:
             st.metric("총 처방", "0건")
-    else:
-        st.markdown("## 📊 이용 통계")
-        st.info("이름을 입력하면 개인별 통계를 확인할 수 있습니다")
+    
+    # 텔레그램 설정 (자녀 모드만)
+    if patient_name and st.session_state.user_id and user_role == "자녀":
+        st.divider()
+        st.markdown("## 📱 텔레그램 알림 설정")
+        
+        # 현재 설정 조회
+        try:
+            settings = supabase.table('user_notification_settings')\
+                .select('*')\
+                .eq('user_id', st.session_state.user_id)\
+                .execute()
+            
+            current_chat_id = ""
+            telegram_enabled = False
+            
+            if settings.data and len(settings.data) > 0:
+                current_chat_id = settings.data[0].get('telegram_chat_id', '')
+                telegram_enabled = settings.data[0].get('telegram_enabled', False)
+            
+            # 설정 방법 안내
+            with st.expander("📖 설정 방법 보기", expanded=not current_chat_id):
+                st.markdown("""
+### 텔레그램 알림 설정 방법
+
+1. **텔레그램 앱 설치** (스마트폰 or PC)
+
+2. **봇과 대화 시작**
+   - 텔레그램에서 봇 검색: `@your_medication_bot`
+   - 대화 시작 버튼 클릭
+   - 아무 메시지나 보내기 (예: "안녕")
+
+3. **Chat ID 받기**
+   - 관리자에게 Chat ID 요청
+   - 또는 브라우저에서 확인:
+   ```
+   https://api.telegram.org/bot<BOT_TOKEN>/getUpdates
+   ```
+
+4. **아래에 Chat ID 입력하고 저장**
+
+💡 **Chat ID는 숫자로만 이루어져 있습니다** (예: 123456789)
+                """)
+            
+            # Chat ID 입력
+            chat_id = st.text_input(
+                "텔레그램 Chat ID",
+                value=current_chat_id,
+                placeholder="123456789",
+                help="봇과 대화를 시작한 후 받은 Chat ID를 입력하세요"
+            )
+            
+            # 알림 활성화 스위치
+            telegram_switch = st.checkbox(
+                "📢 텔레그램 알림 받기", 
+                value=telegram_enabled,
+                help="부모님이 약을 드시면 텔레그램으로 즉시 알림이 옵니다"
+            )
+            
+            # 저장 버튼
+            if st.button("💾 텔레그램 설정 저장", use_container_width=True, type="primary"):
+                if chat_id and chat_id.strip().replace('-', '').isdigit():
+                    try:
+                        upsert_data = {
+                            "user_id": st.session_state.user_id,
+                            "telegram_chat_id": chat_id.strip(),
+                            "telegram_enabled": telegram_switch,
+                            "updated_at": datetime.now().isoformat()
+                        }
+                        
+                        supabase.table('user_notification_settings')\
+                            .upsert(upsert_data)\
+                            .execute()
+                        
+                        st.success("✅ 텔레그램 설정이 저장되었습니다!")
+                        
+                        # 테스트 메시지 전송
+                        if telegram_switch and st.secrets.get("TELEGRAM_ENABLED", False):
+                            test_msg = f"🎉 {patient_name}님, 텔레그램 알림이 설정되었습니다!\n\n부모님이 약을 드시면 이런 식으로 알림이 옵니다."
+                            if send_telegram_message(chat_id.strip(), test_msg):
+                                st.success("✅ 테스트 메시지가 전송되었습니다! 텔레그램을 확인해보세요 📱")
+                            else:
+                                st.warning("⚠️ 테스트 메시지 전송 실패. Chat ID를 다시 확인해주세요.")
+                        
+                        time.sleep(1)
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"저장 실패: {str(e)}")
+                elif chat_id:
+                    st.error("❌ 올바른 Chat ID를 입력하세요 (숫자만 가능)")
+                else:
+                    st.warning("⚠️ Chat ID를 입력해주세요")
+            
+            # 현재 상태 표시
+            if telegram_enabled and current_chat_id:
+                st.success("✅ 텔레그램 알림이 활성화되어 있습니다")
+            elif current_chat_id:
+                st.info("ℹ️ Chat ID는 저장되었지만 알림이 비활성화되어 있습니다")
+            else:
+                st.info("ℹ️ 텔레그램 알림을 설정하면 실시간으로 알림을 받을 수 있습니다")
+                
+        except Exception as e:
+            st.error(f"설정 조회 오류: {str(e)}")
     
     st.divider()
 
@@ -920,7 +1079,7 @@ if user_role == "부모님":
             )
 
             if st.button("💾 이 날짜로 저장하기", type="primary", use_container_width=True):
-                if patient_name:
+                if patient_name and st.session_state.user_id:
                     try:
                         save_datetime = datetime.combine(final_date, time(12, 0, 0)).isoformat()
                         
@@ -930,7 +1089,8 @@ if user_role == "부모님":
                             medicines,
                             extracted_data.get('hospital', ''),
                             json.dumps(all_medicine_info, ensure_ascii=False),
-                            save_datetime
+                            save_datetime,
+                            st.session_state.user_id
                         )
                         
                         if success:
@@ -1058,16 +1218,6 @@ if user_role == "부모님":
         
         if not patient_name:
             st.markdown('<div class="warning-box">⚠️ 사이드바에서 이름을 입력하면 복약 기록을 관리할 수 있습니다!</div>', unsafe_allow_html=True)
-            st.info("""
-### 📋 복약 캘린더 기능
-- 📅 **캘린더로 처방 기록 한눈에 보기**
-- 💊 **날짜별 약물 정보 조회**
-- ➕ **수동으로 처방 기록 추가**
-- 🗑️ **기록 삭제 및 관리**
-- 📊 **복약 통계 및 분석**
-
-👈 사이드바에서 이름을 입력하고 시작하세요!
-            """)
         else:
             col1, col2, col3 = st.columns([2, 3, 2])
             
@@ -1176,22 +1326,6 @@ if user_role == "부모님":
                                     st.markdown("**💊 처방 약물:**")
                                     for med in medicines:
                                         st.markdown(f"- {med}")
-                                
-                                with st.expander("📊 상세 정보"):
-                                    analysis = record.get('analysis', '{}')
-                                    try:
-                                        if isinstance(analysis, str):
-                                            analysis_data = json.loads(analysis)
-                                        else:
-                                            analysis_data = analysis
-                                        
-                                        if isinstance(analysis_data, list) and len(analysis_data) > 0:
-                                            for med_info in analysis_data:
-                                                st.markdown(f"**{med_info.get('약품명', '알 수 없음')}**")
-                                                st.write(f"효능: {med_info.get('효능효과', '정보 없음')[:100]}...")
-                                                st.divider()
-                                    except:
-                                        st.write("상세 정보를 불러올 수 없습니다")
                             
                             with col2:
                                 taken = record.get('taken', False)
@@ -1199,8 +1333,10 @@ if user_role == "부모님":
                                     st.success("✅ 복용 완료")
                                 else:
                                     if st.button("✅ 먹었어요", key=f"take_{record['id']}", use_container_width=True):
-                                        mark_as_taken(record['id'])
-                                        st.rerun()
+                                        medicines = record.get('medicines', [])
+                                        if mark_as_taken(record['id'], patient_name, medicines, st.session_state.user_id):
+                                            st.success("✅ 복용 완료! 자녀에게 알림이 전송되었습니다.")
+                                            st.rerun()
                             
                             with col3:
                                 if st.button("🗑️", key=f"del_{record['id']}", use_container_width=True):
@@ -1235,30 +1371,16 @@ if user_role == "부모님":
                                     medicines_list,
                                     manual_hospital,
                                     json.dumps([], ensure_ascii=False),
-                                    scan_date
+                                    scan_date,
+                                    st.session_state.user_id
                                 ):
                                     st.success("✅ 기록이 추가되었습니다!")
                                     st.rerun()
                             else:
                                 st.warning("병원명과 약 이름을 모두 입력해주세요")
-            else:
-                st.info("👆 캘린더에서 날짜를 선택하면 해당 날짜의 처방 기록을 확인할 수 있습니다")
-                
-                st.markdown("### 📊 최근 처방 기록")
-                recent_records = get_records_by_user(patient_name)[:5]
-                
-                if recent_records:
-                    for record in recent_records:
-                        date = datetime.fromisoformat(record['scan_date']).strftime('%Y-%m-%d')
-                        medicines = record.get('medicines', [])
-                        med_count = len(medicines) if isinstance(medicines, list) else 0
-                        
-                        st.markdown(f"- **{date}** | {record.get('hospital', '병원 정보 없음')} | {med_count}개 약물")
-                else:
-                    st.write("아직 기록이 없습니다. 처방약을 스캔하거나 수동으로 추가해보세요!")
 
 else:  # 자녀 모드
-    tab1, tab2 = st.tabs(["👨‍👩‍👧 부모님 연결", "📊 복약 현황"])
+    tab1, tab2, tab3 = st.tabs(["👨‍👩‍👧 부모님 연결", "🔔 알림", "📊 복약 현황"])
     
     with tab1:
         st.markdown("## 👨‍👩‍👧 부모님 계정 연결")
@@ -1270,6 +1392,7 @@ else:  # 자녀 모드
             if parent and st.session_state.user_id:
                 if connect_family(parent['id'], st.session_state.user_id):
                     st.success(f"✅ {parent_name}님과 연결되었습니다!")
+                    st.rerun()
             else:
                 st.error("해당 이름의 부모님을 찾을 수 없습니다")
         
@@ -1280,9 +1403,63 @@ else:  # 자녀 모드
             if parents:
                 st.markdown("### 연결된 부모님")
                 for p in parents:
-                    st.info(f"👤 {p['users']['name']} ({p['users']['age']}세)")
+                    parent_info = p.get('users', {})
+                    if isinstance(parent_info, dict):
+                        st.info(f"👤 {parent_info.get('name')} ({parent_info.get('age')}세)")
     
     with tab2:
+        st.markdown("## 🔔 복약 알림")
+        
+        if not st.session_state.user_id:
+            st.warning("로그인이 필요합니다")
+        else:
+            # 읽지 않은 알림
+            unread_notifications = get_unread_notifications(st.session_state.user_id)
+            
+            if unread_notifications:
+                st.markdown(f"### 🆕 읽지 않은 알림 ({len(unread_notifications)}개)")
+                
+                for notif in unread_notifications:
+                    st.markdown(f"""
+                    <div class="notification-card unread">
+                        <strong>🔔 새 알림</strong><br>
+                        {notif['message']}<br>
+                        <small>{datetime.fromisoformat(notif['created_at']).strftime('%Y-%m-%d %H:%M')}</small>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    col1, col2 = st.columns([4, 1])
+                    with col2:
+                        if st.button("읽음", key=f"read_{notif['id']}", use_container_width=True):
+                            mark_notification_as_read(notif['id'])
+                            st.rerun()
+                
+                if st.button("모두 읽음 처리", use_container_width=True):
+                    mark_all_notifications_as_read(st.session_state.user_id)
+                    st.success("모든 알림을 읽음 처리했습니다")
+                    st.rerun()
+                
+                st.divider()
+            
+            # 전체 알림 내역
+            st.markdown("### 📜 전체 알림 내역")
+            all_notifications = get_all_notifications(st.session_state.user_id)
+            
+            if all_notifications:
+                for notif in all_notifications:
+                    is_read = notif.get('is_read', False)
+                    card_class = "notification-card" if is_read else "notification-card unread"
+                    
+                    st.markdown(f"""
+                    <div class="{card_class}">
+                        {notif['message']}<br>
+                        <small>{datetime.fromisoformat(notif['created_at']).strftime('%Y-%m-%d %H:%M')}</small>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("알림 내역이 없습니다")
+    
+    with tab3:
         st.markdown("## 📊 부모님 복약 현황")
         
         if st.session_state.user_id:
@@ -1292,8 +1469,13 @@ else:  # 자녀 모드
                 st.warning("연결된 부모님이 없습니다. 먼저 연결해주세요!")
             else:
                 for p in parents:
-                    parent_id = p['parent_id']
-                    parent_name = p['users']['name']
+                    parent_info = p.get('users', {})
+                    if isinstance(parent_info, dict):
+                        parent_id = parent_info.get('id')
+                        parent_name = parent_info.get('name')
+                    else:
+                        parent_id = p.get('parent_id')
+                        parent_name = "부모님"
                     
                     st.markdown(f"### 👤 {parent_name}님")
                     
@@ -1342,12 +1524,15 @@ else:  # 자녀 모드
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: white; padding: 30px; background: rgba(255,255,255,0.1); border-radius: 15px;'>
-    <h3 style='margin-bottom: 10px;'>💊 스마트 약봉지 분석 시스템 v4.0 🎉</h3>
+    <h3 style='margin-bottom: 10px;'>💊 스마트 약봉지 분석 시스템 v5.0 🎉</h3>
     <p style='font-size: 1.1em; margin-bottom: 15px;'>
+        <strong>NEW:</strong> 🔔 실시간 텔레그램 알림 시스템 (무료!)
+    </p>
+    <p style='font-size: 0.9em; margin-bottom: 10px;'>
         <strong>처방약 분석:</strong> OpenAI GPT-4o + 이미지 전처리 | 
-        <strong>일반의약품 정보:</strong> 식약처 e약은요 API | 
-        <strong>복약 관리:</strong> 캘린더 기반 기록 시스템 + 가족 복약 모니터링 |
-        <strong>데이터베이스:</strong> Supabase
+        <strong>일반의약품:</strong> 식약처 e약은요 API<br>
+        <strong>알림:</strong> 텔레그램 봇 + 앱 내 알림 | 
+        <strong>DB:</strong> Supabase
     </p>
     <p style='font-size: 0.95em; color: rgba(255,255,255,0.8);'>
         ⚠️ 본 서비스는 참고용이며, 정확한 정보는 의사/약사와 상담하세요.
