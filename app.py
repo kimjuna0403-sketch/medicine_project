@@ -131,341 +131,122 @@ def apply_mobile_ui():
 
 apply_mobile_ui()
 
-# ==================== CSS 스타일링 (약봉투 디자인) ====================
+# ==================== CSS 스타일링 ====================
 st.markdown("""
     <style>
-    /* 구글 폰트 - 손글씨 & 한글 */
-    @import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;700;900&display=swap');
-    
-    /* 배경 - 약봉투 줄무늬 */
     .stApp {
-        background: repeating-linear-gradient(
-            90deg,
-            #f5f5f5 0px,
-            #f5f5f5 40px,
-            #e3f2fd 40px,
-            #e3f2fd 42px,
-            #f5f5f5 42px,
-            #f5f5f5 100px,
-            #ffebee 100px,
-            #ffebee 102px
-        );
-        font-family: 'Noto Sans KR', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     
-    /* 메인 컨테이너 - 약봉투 느낌 */
     .main .block-container {
-        background: #fffef7 !important;
-        border: 3px solid #2196f3;
-        border-style: dashed;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-        position: relative;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2rem;
+        border-radius: 20px;
     }
     
-    /* 약봉투 도장 워터마크 */
-    .main .block-container::before {
-        content: '💊';
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 4em;
-        opacity: 0.08;
-        transform: rotate(-15deg);
-        z-index: 0;
-    }
-    
-    /* 제목 - 도장 스타일 */
     .main-title {
-        color: #d32f2f;
-        font-family: 'Nanum Pen Script', cursive;
+        color: white;
         text-align: center;
-        font-size: 2.8em !important;
-        font-weight: 900;
-        border: 5px solid #d32f2f;
-        border-radius: 50%;
-        width: 180px;
-        height: 180px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 20px auto;
-        background: white;
-        box-shadow: 0 6px 12px rgba(211,47,47,0.4);
-        transform: rotate(-3deg);
-        line-height: 1.2;
+        font-size: 3.5em;
+        font-weight: 800;
+        margin-bottom: 10px;
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        letter-spacing: -1px;
     }
     
-    /* 부제목 */
     .sub-title {
-        color: #1565c0;
+        color: rgba(255, 255, 255, 0.95);
         text-align: center;
-        font-size: 1.1em;
-        margin-bottom: 30px;
-        font-weight: 700;
-        font-family: 'Noto Sans KR', sans-serif;
+        font-size: 1.3em;
+        margin-bottom: 40px;
+        font-weight: 500;
     }
     
-    /* 탭 - 약봉투 플랩 느낌 */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background: transparent;
-        padding: 10px 0;
-        border-radius: 0;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        border-radius: 15px;
     }
     
     .stTabs [data-baseweb="tab"] {
-        background: #e3f2fd;
-        border: 2px solid #2196f3;
-        color: #1565c0;
-        border-radius: 5px 5px 0 0;
-        padding: 12px 20px;
-        font-weight: 700;
-        font-size: 1em;
-        font-family: 'Noto Sans KR', sans-serif;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 10px;
+        padding: 15px 30px;
+        font-weight: 600;
+        font-size: 1.1em;
     }
     
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
-        background: #2196f3;
-        color: white;
-        border-bottom: none;
+        background: white;
+        color: #667eea;
     }
     
-    /* 정보 카드 - 라벨 스티커 */
     .info-card {
         background: white;
-        border: 3px solid #2196f3;
-        border-radius: 5px;
-        padding: 20px;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         margin: 15px 0;
-        font-family: 'Noto Sans KR', sans-serif;
-        position: relative;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        border-left: 5px solid #667eea;
     }
     
-    .info-card::before {
-        content: '처방전';
-        position: absolute;
-        top: -14px;
-        left: 20px;
-        background: #2196f3;
-        color: white;
-        padding: 4px 12px;
-        font-size: 0.85em;
-        font-weight: 900;
-        border-radius: 3px;
-    }
-    
-    /* 레코드 카드 */
     .record-card {
         background: white;
-        border: 2px solid #1976d2;
-        border-radius: 5px;
         padding: 20px;
-        margin: 12px 0;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin: 10px 0;
+        border-left: 4px solid #667eea;
         transition: all 0.3s;
     }
     
     .record-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        transform: translateX(5px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
     }
     
-    /* 성공 메시지 - 도장 찍힌 느낌 */
     .success-box {
-        background: #e8f5e9;
-        border: 3px solid #4caf50;
-        border-radius: 5px;
-        padding: 18px;
-        color: #2e7d32;
-        font-weight: 700;
+        background: #d4edda;
+        border-left: 5px solid #28a745;
+        padding: 20px;
+        border-radius: 10px;
+        color: #155724;
+        font-weight: 600;
         margin: 15px 0;
-        position: relative;
     }
     
-    .success-box::after {
-        content: '✓';
-        position: absolute;
-        top: 8px;
-        right: 15px;
-        color: #4caf50;
-        font-size: 2.5em;
-        font-weight: 900;
-        opacity: 0.25;
-    }
-    
-    /* 경고 메시지 */
     .warning-box {
-        background: #fff3e0;
-        border: 3px solid #ff9800;
-        border-radius: 5px;
-        padding: 18px;
-        color: #e65100;
-        font-weight: 700;
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+        padding: 20px;
+        border-radius: 10px;
+        color: #856404;
+        font-weight: 600;
         margin: 15px 0;
     }
     
-    /* 정보 메시지 */
     .info-box {
-        background: #e1f5fe;
-        border: 3px solid #03a9f4;
-        border-radius: 5px;
-        padding: 18px;
-        color: #01579b;
-        font-weight: 700;
+        background: #d1ecf1;
+        border-left: 5px solid #17a2b8;
+        padding: 20px;
+        border-radius: 10px;
+        color: #0c5460;
+        font-weight: 600;
         margin: 15px 0;
     }
     
-    /* 버튼 - 약국 스티커 느낌 */
-    .stButton > button {
-        background: #2196f3 !important;
+    h1, h2, h3, h4 {
         color: white !important;
-        border: 2px solid #1565c0 !important;
-        border-radius: 5px !important;
-        font-family: 'Noto Sans KR', sans-serif !important;
-        font-weight: 900 !important;
-        box-shadow: 0 3px 6px rgba(33,150,243,0.3) !important;
-        transition: all 0.2s !important;
-    }
-    
-    .stButton > button:hover {
-        background: #1976d2 !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 5px 10px rgba(33,150,243,0.4) !important;
-    }
-    
-    .stButton > button:active {
-        transform: translateY(0px) !important;
-    }
-    
-    /* Primary 버튼 */
-    .stButton > button[kind="primary"] {
-        background: #d32f2f !important;
-        border-color: #b71c1c !important;
-    }
-    
-    .stButton > button[kind="primary"]:hover {
-        background: #c62828 !important;
-    }
-    
-    /* 입력 필드 - 수기 작성란 */
-    .stTextInput > div > div > input,
-    .stTextArea textarea,
-    .stNumberInput > div > div > input {
-        border: none !important;
-        border-bottom: 2px solid #2196f3 !important;
-        border-radius: 0 !important;
-        background: repeating-linear-gradient(
-            transparent,
-            transparent 28px,
-            #e3f2fd 28px,
-            #e3f2fd 30px
-        );
-        font-family: 'Nanum Pen Script', cursive !important;
-        font-size: 1.3em !important;
-        padding: 8px 4px !important;
-    }
-    
-    /* 제목 스타일 - 손글씨 */
-    h1 {
-        font-family: 'Nanum Pen Script', cursive !important;
-        color: #d32f2f !important;
-        font-weight: 900 !important;
-    }
-    
-    h2, h3 {
-        font-family: 'Nanum Pen Script', cursive !important;
-        color: #1976d2 !important;
-        font-weight: 900 !important;
-    }
-    
-    h4 {
-        font-family: 'Noto Sans KR', sans-serif !important;
-        color: #424242 !important;
         font-weight: 700 !important;
     }
     
-    /* 본문 텍스트 */
-    p, li, span, div {
-        font-family: 'Noto Sans KR', sans-serif;
-        line-height: 1.7;
-    }
-    
-    /* 메트릭 - 큰 숫자 */
     [data-testid="stMetricValue"] {
-        font-size: 2.2em !important;
-        font-weight: 900 !important;
-        color: #d32f2f !important;
-        font-family: 'Nanum Pen Script', cursive !important;
+        font-size: 2em;
+        font-weight: 800;
+        color: #667eea;
     }
-    
-    /* 챗 메시지 */
-    .stChatMessage {
-        background: white;
-        border: 2px solid #e0e0e0;
-        border-radius: 5px;
-        padding: 15px;
-        margin: 10px 0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-    
-    /* Expander - 접이식 */
-    .streamlit-expanderHeader {
-        background: #e3f2fd !important;
-        border: 2px solid #2196f3 !important;
-        border-radius: 5px !important;
-        font-weight: 700 !important;
-        font-family: 'Noto Sans KR', sans-serif !important;
-        color: #1565c0 !important;
-    }
-    
-    /* 진행바 */
-    .stProgress > div > div > div {
-        background: linear-gradient(90deg, #2196f3 0%, #1976d2 100%) !important;
-    }
-    
-    /* 사이드바 */
-    .css-1d391kg {
-        background: #fafafa;
-        border-right: 3px dashed #2196f3;
-    }
-    
-    /* 알림 카드 */
-    .notification-card {
-        background: #fff9c4;
-        border: 2px solid #fbc02d;
-        border-radius: 5px;
-        padding: 15px;
-        margin: 10px 0;
-        animation: slideIn 0.3s ease-out;
-    }
-    
-    .notification-card.unread {
-        background: #c8e6c9;
-        border-color: #66bb6a;
-        font-weight: 700;
-    }
-    
-    @keyframes slideIn {
-        from {
-            transform: translateX(-20px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    /* 이미지 */
-    img {
-        border: 3px solid #2196f3;
-        border-radius: 5px;
-        box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    }
-    </style>
-""", unsafe_allow_html=True)
     </style>
 """, unsafe_allow_html=True)
 
@@ -1743,76 +1524,19 @@ else:  # 자녀 모드
 # ==================== 푸터 ====================
 st.divider()
 st.markdown("""
-<div style='
-    background: white;
-    border: 3px dashed #2196f3;
-    border-radius: 5px;
-    padding: 25px;
-    margin-top: 30px;
-    text-align: center;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    font-family: "Noto Sans KR", sans-serif;
-'>
-    <h3 style='
-        color: #d32f2f;
-        margin-bottom: 15px;
-        font-family: "Nanum Pen Script", cursive;
-        font-size: 2em;
-        font-weight: 900;
-    '>💊 스마트 약봉지 분석 시스템 v5.0</h3>
-    
-    <div style='
-        background: #e3f2fd;
-        padding: 15px;
-        border-radius: 5px;
-        margin: 15px 0;
-        border: 2px solid #2196f3;
-    '>
-        <p style='
-            color: #1565c0;
-            font-size: 1em;
-            margin: 0;
-            font-weight: 700;
-        '>
-            <strong>🆕 NEW:</strong> 텔레그램 실시간 알림 (무료!)
-        </p>
-    </div>
-    
-    <p style='
-        font-size: 0.9em;
-        color: #424242;
-        margin: 10px 0;
-        line-height: 1.8;
-    '>
-        <strong style="color: #1976d2;">💊 처방약 분석:</strong> GPT-4o Vision<br>
-        <strong style="color: #1976d2;">📱 알림:</strong> 텔레그램 봇<br>
-        <strong style="color: #1976d2;">🗄️ 데이터:</strong> Supabase + 식약처 API
+<div style='text-align: center; color: white; padding: 30px; background: rgba(255,255,255,0.1); border-radius: 15px;'>
+    <h3 style='margin-bottom: 10px;'>💊 스마트 약봉지 분석 시스템 v5.0 🎉</h3>
+    <p style='font-size: 1.1em; margin-bottom: 15px;'>
+        <strong>NEW:</strong> 🔔 실시간 텔레그램 알림 시스템 (무료!)
     </p>
-    
-    <div style='
-        background: #fff3e0;
-        border: 2px solid #ff9800;
-        border-radius: 5px;
-        padding: 12px;
-        margin-top: 15px;
-    '>
-        <p style='
-            color: #e65100;
-            font-size: 0.85em;
-            margin: 0;
-            font-weight: 700;
-        '>
-            ⚠️ 본 서비스는 참고용입니다. 정확한 정보는 의사/약사와 상담하세요.
-        </p>
-    </div>
-    
-    <p style='
-        color: #757575;
-        font-size: 0.8em;
-        margin-top: 15px;
-        font-style: italic;
-    '>
-        Made with ❤️ for 부모님의 건강
+    <p style='font-size: 0.9em; margin-bottom: 10px;'>
+        <strong>처방약 분석:</strong> OpenAI GPT-4o + 이미지 전처리 | 
+        <strong>일반의약품:</strong> 식약처 e약은요 API<br>
+        <strong>알림:</strong> 텔레그램 봇 + 앱 내 알림 | 
+        <strong>DB:</strong> Supabase
+    </p>
+    <p style='font-size: 0.95em; color: rgba(255,255,255,0.8);'>
+        ⚠️ 본 서비스는 참고용이며, 정확한 정보는 의사/약사와 상담하세요.
     </p>
 </div>
 """, unsafe_allow_html=True)
