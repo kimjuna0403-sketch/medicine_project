@@ -50,12 +50,6 @@ def apply_mobile_ui():
             box-shadow: 0 0 20px rgba(0,0,0,0.1); /* 살짝 그림자 주어 입체감 */
             border-radius: 0 0 20px 20px; /* 하단 둥글게 (선택) */
         }
-
-        /* 3. 상단 헤더(햄버거 메뉴 등) 숨기기 - 앱처럼 보이게 */
-        header[data-testid="stHeader"] {
-            visibility: hidden;
-        }
-        
         /* 4. 탭 스타일 변경 (상단 탭이 아닌 버튼형태로 보이게) */
         .stTabs [data-baseweb="tab-list"] {
             gap: 8px;
