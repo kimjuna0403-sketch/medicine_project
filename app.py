@@ -15,7 +15,7 @@ import re
 
 # ==================== 페이지 설정 ====================
 st.set_page_config(
-    page_title="💊 스마트 약봉지 분석 시스템",
+    page_title="우리 가족 스마트 복약 관리",
     page_icon="💊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -40,10 +40,6 @@ def apply_mobile_ui():
             min-height: 100vh;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             border-radius: 0 0 20px 20px;
-        }
-
-        header[data-testid="stHeader"] {
-            visibility: hidden;
         }
         
         .stTabs [data-baseweb="tab-list"] {
@@ -1525,7 +1521,7 @@ else:  # 자녀 모드
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: white; padding: 30px; background: rgba(255,255,255,0.1); border-radius: 15px;'>
-    <h3 style='margin-bottom: 10px;'>💊 스마트 약봉지 분석 시스템 v5.0 🎉</h3>
+    <h3 style='margin-bottom: 10px;'>💊 우리 가족 스마트 복약 관리 🎉</h3>
     <p style='font-size: 1.1em; margin-bottom: 15px;'>
         <strong>NEW:</strong> 🔔 실시간 텔레그램 알림 시스템 (무료!)
     </p>
