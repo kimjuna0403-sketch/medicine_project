@@ -621,7 +621,7 @@ def send_telegram_message(chat_id, message):
 
 {message}
 
-<i>스마트 약봉지 분석 시스템</i>"""
+<i>우리 가족 스마트 복약 관리리</i>"""
         
         data = {
             "chat_id": chat_id,
@@ -777,7 +777,7 @@ def mark_as_taken(record_id, parent_name, medicines, parent_user_id):
         return False
 
 # ==================== 메인 타이틀 ====================
-st.markdown('<h1 class="main-title">💊 스마트 약봉지 분석 시스템</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">♥우리가족 스마트 복약 관리♥</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">AI가 약봉지를 분석하고, 부모님 복약을 관리합니다</p>', unsafe_allow_html=True)
 
 # ==================== 사이드바 ====================
