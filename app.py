@@ -1082,7 +1082,7 @@ if user_role == "부모님":
             if st.button("💾 이 날짜로 저장하기", type="primary", use_container_width=True):
                 if patient_name and st.session_state.user_id:
                     try:
-                        save_datetime = datetime.combine(final_date, time(12, 0, 0)).isoformat()
+                        save_datetime = datetime.combine(final_date, datetime.min.time().replace(hour=12)).isoformat()
                         
                         success = save_to_database(
                             patient_name,
@@ -1364,7 +1364,7 @@ if user_role == "부모님":
                             if manual_hospital and manual_medicines:
                                 medicines_list = [m.strip() for m in manual_medicines.split('\n') if m.strip()]
                                 
-                                scan_date = datetime.combine(selected_date, time(12, 0, 0)).isoformat()
+                                scan_date = datetime.combine(selected_date, datetime.min.time().replace(hour=12)).isoformat()
                                 
                                 if save_to_database(
                                     patient_name,
