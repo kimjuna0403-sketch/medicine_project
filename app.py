@@ -130,23 +130,27 @@ apply_mobile_ui()
 # ==================== CSS 스타일링 ====================
 st.markdown("""
     <style>
+    /* 1. 배경색 변경: 눈이 편한 블루-민트 그라데이션 */
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0093E9 0%, #80D0C7 100%);
+        font-family: 'Noto Sans KR', sans-serif; /* 깔끔한 폰트 적용 */
     }
     
     .main .block-container {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.1);
         padding: 2rem;
         border-radius: 20px;
+        backdrop-filter: blur(10px); /* 배경 흐림 효과 추가 */
     }
     
+    /* 2. 제목 가독성 강화 */
     .main-title {
         color: white;
         text-align: center;
         font-size: 3.5em;
         font-weight: 800;
         margin-bottom: 10px;
-        text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        text-shadow: 0 4px 12px rgba(0,0,0,0.2); /* 그림자 부드럽게 조정 */
         letter-spacing: -1px;
     }
     
@@ -156,55 +160,61 @@ st.markdown("""
         font-size: 1.3em;
         margin-bottom: 40px;
         font-weight: 500;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
+    /* 3. 탭 스타일: 민트톤에 맞게 조정 */
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.15);
         padding: 10px;
         border-radius: 15px;
     }
     
     .stTabs [data-baseweb="tab"] {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.3);
         color: white;
         border-radius: 10px;
         padding: 15px 30px;
         font-weight: 600;
         font-size: 1.1em;
+        border: none;
     }
     
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         background: white;
-        color: #667eea;
+        color: #0093E9; /* 선택된 탭 글씨색을 배경과 어울리는 파란색으로 변경 */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     
+    /* 4. 정보 카드 포인트 컬러 변경 (보라색 -> 청록색) */
     .info-card {
         background: white;
         padding: 25px;
         border-radius: 15px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
         margin: 15px 0;
-        border-left: 5px solid #667eea;
+        border-left: 5px solid #0093E9; /* 포인트 컬러 변경 */
     }
     
     .record-card {
         background: white;
         padding: 20px;
         border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         margin: 10px 0;
-        border-left: 4px solid #667eea;
+        border-left: 4px solid #80D0C7; /* 포인트 컬러 변경 */
         transition: all 0.3s;
     }
     
     .record-card:hover {
         transform: translateX(5px);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
     
+    /* 상태별 박스 스타일 */
     .success-box {
-        background: #d4edda;
+        background: #e3f9e5;
         border-left: 5px solid #28a745;
         padding: 20px;
         border-radius: 10px;
@@ -214,7 +224,7 @@ st.markdown("""
     }
     
     .warning-box {
-        background: #fff3cd;
+        background: #fff8e1;
         border-left: 5px solid #ffc107;
         padding: 20px;
         border-radius: 10px;
@@ -224,24 +234,27 @@ st.markdown("""
     }
     
     .info-box {
-        background: #d1ecf1;
-        border-left: 5px solid #17a2b8;
+        background: #e1f5fe;
+        border-left: 5px solid #0093E9;
         padding: 20px;
         border-radius: 10px;
-        color: #0c5460;
+        color: #0277bd;
         font-weight: 600;
         margin: 15px 0;
     }
     
+    /* 헤더 및 텍스트 강제 화이트 처리 */
     h1, h2, h3, h4 {
         color: white !important;
         font-weight: 700 !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
+    /* 메트릭(숫자) 색상 변경 */
     [data-testid="stMetricValue"] {
         font-size: 2em;
         font-weight: 800;
-        color: #667eea;
+        color: #0093E9; /* 메트릭 숫자도 파란색 계열로 변경 */
     }
     </style>
 """, unsafe_allow_html=True)
