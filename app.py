@@ -1311,7 +1311,7 @@ elif st.session_state.user_role == "부모님":
             # 요약 정보 표시
             end_date = final_date + timedelta(days=medication_duration - 1)
             st.info(f"""
-📋 **복용 요약**
+ **복용 요약**
 - 기간: {final_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')} ({medication_duration}일)
 - 시간: {', '.join(medication_times) if medication_times else '선택 안 함'}
 - 자동 생성: {medication_duration}개의 복약 기록이 캘린더에 추가됩니다
