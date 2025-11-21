@@ -465,11 +465,15 @@ def get_user_info():
         return st.session_state.patient_name, st.session_state.patient_age
     return None, None
 
-def save_to_database(patient_name, patient_age, medicines, hospital, analysis, scan_date=None, user_id=None):
-    """Supabase에 저장"""
+def save_to_database(patient_name, patient_age, medicines, hospital, analysis, scan_date=None, user_id=None, medication_duration=1, medication_times=None, is_recurring=False, parent_record_id=None):
+    """Supabase에 저장 (복용 기간 지원)"""
     try:
         if scan_date is None:
             scan_date = datetime.now().isoformat()
+        
+        # 종료일 계산
+        start_date = datetime.fromisoformat(scan_date) if isinstance(scan_date, str) else scan_date
+        end_date = start_date + timedelta(days=medication_duration - 1)
         
         data = {
             "patient_name": patient_name,
@@ -477,16 +481,60 @@ def save_to_database(patient_name, patient_age, medicines, hospital, analysis, s
             "medicines": medicines,
             "hospital": hospital,
             "analysis": analysis,
-            "scan_date": scan_date,
+            "scan_date": scan_date if isinstance(scan_date, str) else scan_date.isoformat(),
             "created_at": datetime.now().isoformat(),
             "user_id": user_id,
-            "taken": False
+            "taken": False,
+            "medication_duration": medication_duration,
+            "medication_times": medication_times if medication_times else [],
+            "end_date": end_date.isoformat(),
+            "is_recurring": is_recurring,
+            "parent_record_id": parent_record_id
         }
-        supabase.table('medicine_records').insert(data).execute()
+        
+        response = supabase.table('medicine_records').insert(data).execute()
+        
+        # 원본 레코드 ID 반환 (나중에 자동 생성에 사용)
+        if response.data:
+            return response.data[0]['id']
         return True
+        
     except Exception as e:
         st.error(f"❌ 저장 오류: {str(e)}")
-        return False
+        return None
+
+def create_recurring_records(patient_name, patient_age, medicines, hospital, analysis, start_date, user_id, medication_duration, medication_times, parent_record_id):
+    """복용 기간 동안 자동으로 기록 생성"""
+    try:
+        created_count = 0
+        
+        # 2일차부터 생성 (1일차는 이미 저장됨)
+        for day_offset in range(1, medication_duration):
+            record_date = start_date + timedelta(days=day_offset)
+            
+            # 자동 생성된 기록 저장
+            result = save_to_database(
+                patient_name=patient_name,
+                patient_age=patient_age,
+                medicines=medicines,
+                hospital=hospital,
+                analysis=analysis,
+                scan_date=record_date.isoformat(),
+                user_id=user_id,
+                medication_duration=medication_duration,
+                medication_times=medication_times,
+                is_recurring=True,  # 자동 생성 표시
+                parent_record_id=parent_record_id
+            )
+            
+            if result:
+                created_count += 1
+        
+        return created_count
+        
+    except Exception as e:
+        st.error(f"❌ 반복 기록 생성 오류: {str(e)}")
+        return 0
 
 def get_records_by_user(patient_name):
     """특정 사용자의 모든 기록 가져오기"""
@@ -1077,54 +1125,130 @@ if user_role == "부모님":
                     st.write(f"주의사항: {info.get('주의사항', '-')}")
 
             st.divider()
-            st.markdown("### 💾 저장 날짜 확인")
+            st.markdown("### 💊 복용 정보 입력")
 
-            ai_date = extracted_data.get('date', '')
-            parsed_date = parse_flexible_date(ai_date)
-            default_date = parsed_date if parsed_date else datetime.now().date()
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # 날짜 선택
+                ai_date = extracted_data.get('date', '')
+                parsed_date = parse_flexible_date(ai_date)
+                default_date = parsed_date if parsed_date else datetime.now().date()
 
-            final_date = st.date_input(
-                "저장될 날짜", 
-                value=default_date,
-                help="캘린더에 저장될 날짜입니다."
-            )
+                final_date = st.date_input(
+                    "📅 시작일", 
+                    value=default_date,
+                    help="복용 시작 날짜"
+                )
+            
+            with col2:
+                # 복용 기간 선택
+                duration_options = {
+                    "1일 (오늘만)": 1,
+                    "3일": 3,
+                    "5일": 5,
+                    "7일 (1주일)": 7,
+                    "14일 (2주일)": 14,
+                    "30일 (1개월)": 30,
+                    "직접 입력": 0
+                }
+                
+                duration_choice = st.selectbox(
+                    "📆 복용 기간",
+                    options=list(duration_options.keys()),
+                    index=2,  # 기본값: 5일
+                    help="약을 며칠 동안 복용하시나요?"
+                )
+                
+                medication_duration = duration_options[duration_choice]
+                
+                # 직접 입력 선택 시
+                if medication_duration == 0:
+                    medication_duration = st.number_input(
+                        "일수 입력",
+                        min_value=1,
+                        max_value=90,
+                        value=7,
+                        help="1~90일 사이로 입력하세요"
+                    )
+            
+            # 복용 시간 선택
+            st.markdown("#### ⏰ 복용 시간")
+            time_cols = st.columns(3)
+            
+            medication_times = []
+            with time_cols[0]:
+                if st.checkbox("🌅 아침", value=True):
+                    medication_times.append("아침")
+            with time_cols[1]:
+                if st.checkbox("🌞 점심", value=False):
+                    medication_times.append("점심")
+            with time_cols[2]:
+                if st.checkbox("🌙 저녁", value=True):
+                    medication_times.append("저녁")
+            
+            # 요약 정보 표시
+            end_date = final_date + timedelta(days=medication_duration - 1)
+            st.info(f"""
+📋 **복용 요약**
+- 기간: {final_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')} ({medication_duration}일)
+- 시간: {', '.join(medication_times) if medication_times else '선택 안 함'}
+- 자동 생성: {medication_duration}개의 복약 기록이 캘린더에 추가됩니다
+            """)
 
-            if st.button("💾 이 날짜로 저장하기", type="primary", use_container_width=True):
+            if st.button("💾 저장하기", type="primary", use_container_width=True):
                 if patient_name and st.session_state.user_id:
-                    try:
-                        save_datetime = datetime.combine(final_date, datetime.min.time().replace(hour=12)).isoformat()
-                        
-                        success = save_to_database(
-                            patient_name,
-                            patient_age,
-                            medicines,
-                            extracted_data.get('hospital', ''),
-                            json.dumps(all_medicine_info, ensure_ascii=False),
-                            save_datetime,
-                            st.session_state.user_id
-                        )
-                        
-                        if success:
-                            st.session_state.saved_data = {
-                                'name': patient_name,
-                                'date': final_date.strftime('%Y-%m-%d'),
-                                'count': len(medicines)
-                            }
-                            st.session_state.save_success = True
-                            st.session_state.scan_result = None
-                            st.rerun()
-                        else:
-                            st.error("❌ 데이터베이스 저장 실패")
-                    except Exception as e:
-                        st.error(f"❌ 저장 중 오류: {str(e)}")
+                    if not medication_times:
+                        st.warning("⚠️ 복용 시간을 최소 1개 선택해주세요!")
+                    else:
+                        try:
+                            with st.spinner(f"💾 {medication_duration}일치 기록 생성 중..."):
+                                save_datetime = datetime.combine(final_date, datetime.min.time().replace(hour=12))
+                                
+                                # 1일차 원본 기록 저장
+                                parent_id = save_to_database(
+                                    patient_name,
+                                    patient_age,
+                                    medicines,
+                                    extracted_data.get('hospital', ''),
+                                    json.dumps(all_medicine_info, ensure_ascii=False),
+                                    save_datetime.isoformat(),
+                                    st.session_state.user_id,
+                                    medication_duration=medication_duration,
+                                    medication_times=medication_times,
+                                    is_recurring=False,
+                                    parent_record_id=None
+                                )
+                                
+                                if parent_id:
+                                    # 2일차부터 자동 생성
+                                    if medication_duration > 1:
+                                        created = create_recurring_records(
+                                            patient_name,
+                                            patient_age,
+                                            medicines,
+                                            extracted_data.get('hospital', ''),
+                                            json.dumps(all_medicine_info, ensure_ascii=False),
+                                            save_datetime,
+                                            st.session_state.user_id,
+                                            medication_duration,
+                                            medication_times,
+                                            parent_id
+                                        )
+                                        st.success(f"✅ 총 {medication_duration}일치 기록 생성 완료!")
+                                    else:
+                                        st.success("✅ 저장 완료!")
+                                    
+                                    st.session_state.scan_result = None
+                                    st.balloons()
+                                    time.sleep(1)
+                                    st.rerun()
+                                else:
+                                    st.error("❌ 저장 실패")
+                        except Exception as e:
+                            st.error(f"❌ 저장 중 오류: {str(e)}")
                 else:
                     st.warning("⚠️ 사이드바에서 이름을 먼저 입력해주세요!")
-
-        if st.session_state.get('save_success', False):
-            st.markdown('<div class="success-box">✅ 저장 완료! 📅 캘린더 탭을 확인하세요.</div>', unsafe_allow_html=True)
-            if st.button("확인 (새로 분석하기)"):
-                st.session_state.save_success = False
-                st.rerun()
 
     # ==================== 탭2: 챗봇 ====================
     with tab2:
@@ -1332,6 +1456,11 @@ if user_role == "부모님":
                                 st.markdown(f"**🏥 병원:** {record.get('hospital', '정보 없음')}")
                                 st.markdown(f"**📅 조제일:** {record.get('scan_date', '')[:10]}")
                                 
+                                # 복용 정보 표시
+                                medication_times = record.get('medication_times', [])
+                                if medication_times:
+                                    st.markdown(f"**⏰ 복용 시간:** {', '.join(medication_times)}")
+                                
                                 medicines = record.get('medicines', [])
                                 if isinstance(medicines, list):
                                     st.markdown("**💊 처방 약물:**")
@@ -1537,7 +1666,7 @@ st.markdown("""
 <div style='text-align: center; color: white; padding: 30px; background: rgba(255,255,255,0.1); border-radius: 15px;'>
     <h3 style='margin-bottom: 10px;'>💊 우리 가족 스마트 복약 관리 🎉</h3>
     <p style='font-size: 1.1em; margin-bottom: 15px;'>
-        <strong>NEW:</strong> 🔔 실시간 텔레그램 알림 시스템 (무료!)
+        <strong>NEW:</strong> 🔔 실시간 텔레그램 알림 + 📆 복용 기간 자동 기록 시스템!
     </p>
     <p style='font-size: 0.9em; margin-bottom: 10px;'>
         <strong>처방약 분석:</strong> OpenAI GPT-4o + 이미지 전처리 | 
