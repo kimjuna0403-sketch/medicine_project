@@ -1084,12 +1084,16 @@ with st.sidebar:
    - 대화 시작 버튼 클릭
    - 아무 메시지나 보내기 (예: "안녕")
 
-3. **Chat ID 입력**
-   ➳♡회원님께만 알려드립니다➳♡
+3. **Chat ID 받기**
+   - 회원님께만 알려드립니다➳♡
    ```
    8145800698
    ```
-💡 **Chat ID는 숫자로만 이루어져 있습니다** 
+
+4. **아래에 Chat ID 입력하고 저장**
+
+💡 **Chat ID는 숫자로만 이루어져 있습니다** (예: 123456789)
+                """)
             
             # Chat ID 입력
             chat_id = st.text_input(
@@ -1311,7 +1315,7 @@ elif st.session_state.user_role == "부모님":
             # 요약 정보 표시
             end_date = final_date + timedelta(days=medication_duration - 1)
             st.info(f"""
- **복용 요약**
+📋 **복용 요약**
 - 기간: {final_date.strftime('%Y-%m-%d')} ~ {end_date.strftime('%Y-%m-%d')} ({medication_duration}일)
 - 시간: {', '.join(medication_times) if medication_times else '선택 안 함'}
 - 자동 생성: {medication_duration}개의 복약 기록이 캘린더에 추가됩니다
