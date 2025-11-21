@@ -863,7 +863,7 @@ def mark_as_taken(record_id, parent_name, medicines, parent_user_id):
         return False
 
 # ==================== 메인 타이틀 ====================
-st.markdown('<h1 class="main-title">♥우리가족 스마트 복약 관리 MediMate♥</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">♥ 우리가족 스마트 복약 관리 MediMate ♥</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">AI가 약봉지를 분석하고, 부모님 복약을 관리합니다</p>', unsafe_allow_html=True)
 
 # ==================== 사이드바 ====================
