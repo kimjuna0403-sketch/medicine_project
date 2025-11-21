@@ -600,20 +600,44 @@ def get_calendar_data(patient_name, year, month):
         return set()
 
 # ==================== 사용자 관리 함수 ====================
-def create_user(name, age, role):
+def create_user(name, age, role, pin_code):
+    """PIN 포함 사용자 생성"""
     try:
-        data = {"name": name, "age": age, "role": role}
+        # PIN이 4자리 숫자인지 검증
+        if not pin_code or len(pin_code) != 4 or not pin_code.isdigit():
+            return None
+        
+        data = {
+            "name": name, 
+            "age": age, 
+            "role": role,
+            "pin_code": pin_code
+        }
         response = supabase.table('users').insert(data).execute()
         return response.data[0]['id'] if response.data else None
+    except Exception as e:
+        st.error(f"회원가입 오류: {str(e)}")
+        return None
+
+def authenticate_user(name, pin_code):
+    """이름과 PIN으로 사용자 인증"""
+    try:
+        response = supabase.table('users')\
+            .select('*')\
+            .eq('name', name)\
+            .eq('pin_code', pin_code)\
+            .execute()
+        return response.data[0] if response.data else None
     except:
         return None
 
 def get_user_by_name(name):
+    """이름으로 사용자 존재 여부만 확인 (PIN 없이)"""
     try:
         response = supabase.table('users').select('*').eq('name', name).execute()
-        return response.data[0] if response.data else None
+        return response.data if response.data else []
     except:
-        return None
+        return []
 
 def connect_family(parent_id, child_id):
     try:
@@ -846,72 +870,170 @@ st.markdown('<p class="sub-title">AI가 약봉지를 분석하고, 부모님 복
 with st.sidebar:
     st.markdown("## 👤 사용자 정보")
     
-    # 역할 선택
-    user_role = st.radio("사용 모드", ["부모님", "자녀"], horizontal=True)
-    
     # 세션 상태 초기화
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
     if 'patient_name' not in st.session_state:
         st.session_state.patient_name = ""
     if 'patient_age' not in st.session_state:
         st.session_state.patient_age = 30
     if 'user_id' not in st.session_state:
         st.session_state.user_id = None
+    if 'user_role' not in st.session_state:
+        st.session_state.user_role = "부모님"
     
-    patient_name = st.text_input(
-        "이름", 
-        value=st.session_state.patient_name,
-        placeholder="홍길동", 
-        help="복약 기록 관리를 위해 이름을 입력하세요",
-        key="name_input"
-    )
+    # ==================== 로그인 상태 ====================
+    if st.session_state.logged_in:
+        # 로그인된 상태
+        st.success(f"✅ {st.session_state.patient_name}님")
+        
+        user_role = st.session_state.user_role
+        patient_name = st.session_state.patient_name
+        patient_age = st.session_state.patient_age
+        
+        # 자녀 모드일 경우 읽지 않은 알림 표시
+        if user_role == "자녀":
+            unread_count = len(get_unread_notifications(st.session_state.user_id))
+            if unread_count > 0:
+                st.warning(f"🔔 읽지 않은 알림 {unread_count}개")
+        
+        # 로그아웃 버튼
+        if st.button("🚪 로그아웃", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.user_id = None
+            st.session_state.patient_name = ""
+            st.rerun()
     
-    if user_role == "부모님":
-        patient_age = st.number_input(
-            "나이", 
-            min_value=0, 
-            max_value=120, 
-            value=st.session_state.patient_age, 
-            help="환자 나이를 입력하세요",
-            key="age_input"
-        )
-        st.session_state.patient_age = patient_age
-    
-    # 세션 상태 업데이트
-    st.session_state.patient_name = patient_name
-    
-    # 로그인/회원가입
-    if patient_name:
-        user = get_user_by_name(patient_name)
-        if user:
-            st.session_state.user_id = user['id']
-            link_old_records(patient_name, user['id'])
-            st.success(f"✅ {patient_name}님, 환영합니다!")
-            
-            # 자녀 모드일 경우 읽지 않은 알림 표시
-            if user_role == "자녀":
-                unread_count = len(get_unread_notifications(user['id']))
-                if unread_count > 0:
-                    st.warning(f"🔔 읽지 않은 알림 {unread_count}개")
-        else:
-            if st.button("🆕 회원가입", use_container_width=True):
-                role = 'parent' if user_role == "부모님" else 'child'
-                age = patient_age if user_role == "부모님" else None
-                user_id = create_user(patient_name, age, role)
-                if user_id:
-                    st.session_state.user_id = user_id
-                    link_old_records(patient_name, user_id)
-                    st.success("회원가입 완료!")
-                    st.rerun()
+    # ==================== 로그인/회원가입 화면 ====================
     else:
-        st.warning("⚠️ 이름을 입력하면 복약 기록을 관리할 수 있습니다")
+        # 역할 선택
+        user_role = st.radio("사용 모드", ["부모님", "자녀"], horizontal=True, key="role_select")
+        
+        # 탭으로 로그인/회원가입 구분
+        login_tab, signup_tab = st.tabs(["🔑 로그인", "🆕 회원가입"])
+        
+        # ========== 로그인 탭 ==========
+        with login_tab:
+            st.markdown("### 로그인")
+            
+            login_name = st.text_input(
+                "이름",
+                placeholder="홍길동",
+                key="login_name"
+            )
+            
+            login_pin = st.text_input(
+                "PIN (4자리)",
+                type="password",
+                max_chars=4,
+                placeholder="1234",
+                help="회원가입 시 설정한 4자리 숫자",
+                key="login_pin"
+            )
+            
+            if st.button("🔓 로그인", type="primary", use_container_width=True):
+                if not login_name or not login_pin:
+                    st.error("❌ 이름과 PIN을 모두 입력해주세요")
+                elif len(login_pin) != 4 or not login_pin.isdigit():
+                    st.error("❌ PIN은 4자리 숫자여야 합니다")
+                else:
+                    user = authenticate_user(login_name, login_pin)
+                    if user:
+                        # 로그인 성공
+                        st.session_state.logged_in = True
+                        st.session_state.user_id = user['id']
+                        st.session_state.patient_name = user['name']
+                        st.session_state.patient_age = user.get('age', 30)
+                        st.session_state.user_role = user_role
+                        
+                        link_old_records(user['name'], user['id'])
+                        st.success("✅ 로그인 성공!")
+                        time.sleep(0.5)
+                        st.rerun()
+                    else:
+                        st.error("❌ 이름 또는 PIN이 일치하지 않습니다")
+        
+        # ========== 회원가입 탭 ==========
+        with signup_tab:
+            st.markdown("### 회원가입")
+            
+            signup_name = st.text_input(
+                "이름",
+                placeholder="홍길동",
+                key="signup_name"
+            )
+            
+            if user_role == "부모님":
+                signup_age = st.number_input(
+                    "나이",
+                    min_value=0,
+                    max_value=120,
+                    value=30,
+                    key="signup_age"
+                )
+            else:
+                signup_age = None
+            
+            signup_pin = st.text_input(
+                "PIN 설정 (4자리)",
+                type="password",
+                max_chars=4,
+                placeholder="1234",
+                help="로그인 시 사용할 4자리 숫자를 설정하세요",
+                key="signup_pin"
+            )
+            
+            signup_pin_confirm = st.text_input(
+                "PIN 확인",
+                type="password",
+                max_chars=4,
+                placeholder="1234",
+                key="signup_pin_confirm"
+            )
+            
+            if st.button("✨ 가입하기", type="primary", use_container_width=True):
+                # 입력 검증
+                if not signup_name:
+                    st.error("❌ 이름을 입력해주세요")
+                elif not signup_pin or len(signup_pin) != 4 or not signup_pin.isdigit():
+                    st.error("❌ PIN은 4자리 숫자여야 합니다")
+                elif signup_pin != signup_pin_confirm:
+                    st.error("❌ PIN이 일치하지 않습니다")
+                else:
+                    # 중복 확인 (같은 이름 + PIN 조합)
+                    existing_user = authenticate_user(signup_name, signup_pin)
+                    if existing_user:
+                        st.error("❌ 이미 존재하는 계정입니다")
+                    else:
+                        # 회원가입
+                        role = 'parent' if user_role == "부모님" else 'child'
+                        user_id = create_user(signup_name, signup_age, role, signup_pin)
+                        
+                        if user_id:
+                            # 자동 로그인
+                            st.session_state.logged_in = True
+                            st.session_state.user_id = user_id
+                            st.session_state.patient_name = signup_name
+                            st.session_state.patient_age = signup_age if signup_age else 30
+                            st.session_state.user_role = user_role
+                            
+                            link_old_records(signup_name, user_id)
+                            st.success("✅ 회원가입 완료!")
+                            st.balloons()
+                            time.sleep(0.5)
+                            st.rerun()
+                        else:
+                            st.error("❌ 회원가입 실패. 다시 시도해주세요")
+        
+        st.info("💡 PIN은 로그인 시 필요하니 잊지 마세요!")
     
     st.divider()
     
-    # 사용자별 통계
-    if patient_name:
+    # 사용자별 통계 (로그인 상태일 때만 표시)
+    if st.session_state.logged_in and st.session_state.patient_name:
         st.markdown("## 📊 나의 복약 통계")
         try:
-            all_records = get_records_by_user(patient_name)
+            all_records = get_records_by_user(st.session_state.patient_name)
             total_count = len(all_records)
             
             today = datetime.now().date()
@@ -931,8 +1053,8 @@ with st.sidebar:
         except:
             st.metric("총 처방", "0건")
     
-    # 텔레그램 설정 (자녀 모드만)
-    if patient_name and st.session_state.user_id and user_role == "자녀":
+    # 텔레그램 설정 (자녀 모드만, 로그인 상태)
+    if st.session_state.logged_in and st.session_state.user_id and st.session_state.user_role == "자녀":
         st.divider()
         st.markdown("## 📱 텔레그램 알림 설정")
         
@@ -1008,7 +1130,7 @@ with st.sidebar:
                         
                         # 테스트 메시지 전송
                         if telegram_switch and st.secrets.get("TELEGRAM_ENABLED", False):
-                            test_msg = f"🎉 {patient_name}님, 텔레그램 알림이 설정되었습니다!\n\n부모님이 약을 드시면 이런 식으로 알림이 옵니다."
+                            test_msg = f"🎉 {st.session_state.patient_name}님, 텔레그램 알림이 설정되었습니다!\n\n부모님이 약을 드시면 이런 식으로 알림이 옵니다."
                             if send_telegram_message(chat_id.strip(), test_msg):
                                 st.success("✅ 테스트 메시지가 전송되었습니다! 텔레그램을 확인해보세요 📱")
                             else:
@@ -1037,7 +1159,11 @@ with st.sidebar:
     st.divider()
 
 # ==================== 탭 구성 ====================
-if user_role == "부모님":
+if not st.session_state.logged_in:
+    # 로그인 안 된 상태
+    st.markdown('<div class="warning-box">⚠️ 사이드바에서 로그인해주세요!</div>', unsafe_allow_html=True)
+    
+elif st.session_state.user_role == "부모님":
     tab1, tab2, tab3 = st.tabs(["🏥 처방약 스캔", "💬 약 검색 챗봇", "📅 복약 캘린더"])
     
     # ==================== 탭1: 처방약 스캔 ====================
@@ -1197,7 +1323,7 @@ if user_role == "부모님":
             """)
 
             if st.button("💾 저장하기", type="primary", use_container_width=True):
-                if patient_name and st.session_state.user_id:
+                if st.session_state.patient_name and st.session_state.user_id:
                     if not medication_times:
                         st.warning("⚠️ 복용 시간을 최소 1개 선택해주세요!")
                     else:
@@ -1207,8 +1333,8 @@ if user_role == "부모님":
                                 
                                 # 1일차 원본 기록 저장
                                 parent_id = save_to_database(
-                                    patient_name,
-                                    patient_age,
+                                    st.session_state.patient_name,
+                                    st.session_state.patient_age,
                                     medicines,
                                     extracted_data.get('hospital', ''),
                                     json.dumps(all_medicine_info, ensure_ascii=False),
@@ -1224,8 +1350,8 @@ if user_role == "부모님":
                                     # 2일차부터 자동 생성
                                     if medication_duration > 1:
                                         created = create_recurring_records(
-                                            patient_name,
-                                            patient_age,
+                                            st.session_state.patient_name,
+                                            st.session_state.patient_age,
                                             medicines,
                                             extracted_data.get('hospital', ''),
                                             json.dumps(all_medicine_info, ensure_ascii=False),
@@ -1351,8 +1477,8 @@ if user_role == "부모님":
     with tab3:
         st.markdown("## 📅 복약 캘린더 & 처방 기록 관리")
         
-        if not patient_name:
-            st.markdown('<div class="warning-box">⚠️ 사이드바에서 이름을 입력하면 복약 기록을 관리할 수 있습니다!</div>', unsafe_allow_html=True)
+        if not st.session_state.patient_name:
+            st.markdown('<div class="warning-box">⚠️ 로그인 오류가 발생했습니다!</div>', unsafe_allow_html=True)
         else:
             col1, col2, col3 = st.columns([2, 3, 2])
             
@@ -1388,7 +1514,7 @@ if user_role == "부모님":
             
             st.divider()
             
-            dates_with_records = get_calendar_data(patient_name, year, month)
+            dates_with_records = get_calendar_data(st.session_state.patient_name, year, month)
             
             st.markdown(f"### 📆 {year}년 {month}월")
             
@@ -1440,7 +1566,7 @@ if user_role == "부모님":
                 selected_date = st.session_state.selected_date
                 st.markdown(f"## 📋 {selected_date.strftime('%Y년 %m월 %d일')} 처방 기록")
                 
-                records = get_records_by_date(patient_name, selected_date)
+                records = get_records_by_date(st.session_state.patient_name, selected_date)
                 
                 if records:
                     st.success(f"✅ {len(records)}건의 처방 기록이 있습니다")
@@ -1474,7 +1600,7 @@ if user_role == "부모님":
                                 else:
                                     if st.button("✅ 먹었어요", key=f"take_{record['id']}", use_container_width=True):
                                         medicines = record.get('medicines', [])
-                                        if mark_as_taken(record['id'], patient_name, medicines, st.session_state.user_id):
+                                        if mark_as_taken(record['id'], st.session_state.patient_name, medicines, st.session_state.user_id):
                                             st.success("✅ 복용 완료! 자녀에게 알림이 전송되었습니다.")
                                             st.rerun()
                             
@@ -1506,8 +1632,8 @@ if user_role == "부모님":
                                 scan_date = datetime.combine(selected_date, datetime.min.time().replace(hour=12)).isoformat()
                                 
                                 if save_to_database(
-                                    patient_name,
-                                    patient_age,
+                                    st.session_state.patient_name,
+                                    st.session_state.patient_age,
                                     medicines_list,
                                     manual_hospital,
                                     json.dumps([], ensure_ascii=False),
@@ -1525,16 +1651,39 @@ else:  # 자녀 모드
     with tab1:
         st.markdown("## 👨‍👩‍👧 부모님 계정 연결")
         
-        parent_name = st.text_input("부모님 이름", placeholder="예: 김영희")
+        col1, col2 = st.columns([3, 2])
         
-        if st.button("🔗 연결하기", type="primary"):
-            parent = get_user_by_name(parent_name)
-            if parent and st.session_state.user_id:
-                if connect_family(parent['id'], st.session_state.user_id):
-                    st.success(f"✅ {parent_name}님과 연결되었습니다!")
-                    st.rerun()
+        with col1:
+            parent_name = st.text_input("부모님 이름", placeholder="예: 김영희")
+        
+        with col2:
+            parent_pin = st.text_input(
+                "부모님 PIN (4자리)",
+                type="password",
+                max_chars=4,
+                placeholder="1234",
+                help="부모님께 PIN을 확인하세요"
+            )
+        
+        if st.button("🔗 연결하기", type="primary", use_container_width=True):
+            if not parent_name or not parent_pin:
+                st.error("❌ 이름과 PIN을 모두 입력해주세요")
+            elif len(parent_pin) != 4 or not parent_pin.isdigit():
+                st.error("❌ PIN은 4자리 숫자여야 합니다")
             else:
-                st.error("해당 이름의 부모님을 찾을 수 없습니다")
+                # 이름 + PIN으로 정확하게 인증
+                parent = authenticate_user(parent_name, parent_pin)
+                
+                if parent and st.session_state.user_id:
+                    if connect_family(parent['id'], st.session_state.user_id):
+                        st.success(f"✅ {parent_name}님과 연결되었습니다!")
+                        st.balloons()
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error("❌ 연결에 실패했습니다. 이미 연결되어 있을 수 있습니다.")
+                else:
+                    st.error("❌ 이름 또는 PIN이 일치하지 않습니다")
         
         st.divider()
         
