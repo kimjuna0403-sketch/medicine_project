@@ -1084,11 +1084,9 @@ with st.sidebar:
    - 대화 시작 버튼 클릭
    - 아무 메시지나 보내기 (예: "안녕")
 
-3. **Chat ID 받기**
-   - 관리자에게 Chat ID 요청
-   - 또는 브라우저에서 확인:
-   ```
-   https://api.telegram.org/bot<BOT_TOKEN>/getUpdates
+3. **Chat ID**
+   - 회원님께만 알려드립니다 ➳♡
+   ( 8145800698 )
    ```
 
 4. **아래에 Chat ID 입력하고 저장**
